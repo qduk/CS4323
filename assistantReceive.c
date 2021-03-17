@@ -61,38 +61,6 @@ void *assistantReceive() {
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
-    char messageBuffer[256];
-
-    portno = atoi(argv[2]);
-
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (sockfd h_addr,(char *)&serv_addr.sin_addr.s_addr,server->h_length);
-
-    serv_addr.sin_port = htons(portno);
-
-    if (connect(sockfd,&serv_addr,sizeof(serv_addr)) < 0) {
-        error("ERROR connecting");
-    }
-
-    printf("Please enter the message: ");
-
-    bzero(messageBuffer, 256);
-    fgets(messageBuffer, 255, stdin);
-
-    n = write(sockfd, messageBuffer, strlen(messageBuffer));
-
-    if (n < 0) {
-        error("ERROR writing to socket");
-    }
-
-    bzero(messageBuffer, 256);
-    n = read(sockfd, messageBuffer, 255);
-    if (n < 0) {
-        error("ERROR reading from socket");
-    }
-    printf("%s\n", messageBuffer);
-
     printf("Assistant has been created.\n");
 	
     /*
@@ -181,8 +149,3 @@ History.txt file:
 3. If full, delete oldest entry before adding new one
 
 */
-
-void error(char *message) {
-    perror(msg);
-    exit(0);
-}
