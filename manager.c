@@ -63,6 +63,6 @@ int structure(){
 }
 
 void manager() {
-  //printf("Hello from the mananger thread.\n");
-  structure();
+  printf("Hello from the mananger thread.\n");
+  //structure();
 }
