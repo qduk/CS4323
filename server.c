@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <pthread.h>
+#include "server.h"
 
 struct employee {
     int id;
@@ -37,11 +39,27 @@ struct salary_sheet {
 };
 
 /* Function Declaration */
-int get_id(char* emp_name);
-int get_id_from_line(char* file_line);
-struct salary_sheet search_salaries(int emp_id);
+char* get_id(char* emp_name);
+char* get_id_from_line(char* file_line);
+int ensure_correct_line(char* fileline, char* );
+void* search_salaries(void *value);
+void server();
 
-struct salary_sheet search_salaries(int emp_id) {
+int ensure_correct_line(char* file_line, char* emp_id){
+    /* Function: ensure_correct_line
+    * ------------------------
+    * 
+    *  ENsure the id is matched at the beginning of the line.
+    * 
+    *  returns: bool value saying true or false if the line has emp_id in the beginning.
+    */
+    char* first_value;
+    first_value = strtok(file_line, ",");
+
+    //printf("%s\n", file_line);
+}
+
+void* search_salaries(void *value) {
     /* Function: search_salaries
     * ------------------------
     * 
@@ -49,24 +67,28 @@ struct salary_sheet search_salaries(int emp_id) {
     * 
     *  returns: struct salaray_sheet
     */
-   struct salary_sheet s;
-   FILE *fp;
-   char temp[512];
-   char *string_emp_id;
 
-   string_emp_id = itoa(emp_id);
+    struct salary_sheet s;
+    FILE *fp;
+    char temp[512];
+    char* correct_salary_line;
+    int correct_line;
 
-   fp = fopen("salaries.txt", "r");
+    fp = fopen("salaries.txt", "r");
+    char *emp_id = (char *)value;
+
+    while (fgets(temp, 512, fp) != NULL){
+        if((strstr(temp, emp_id)) != NULL){
+            //printf("%s", temp);
+            correct_line = ensure_correct_line(temp, emp_id);
+        }
+    }
+    //fp = fopen("salaries.txt", "r");
 
     /* Loop through the file looking for the line containing the name */
-   while (fgets(temp, 512, fp) != NULL){
-       if((strstr(temp, string_emp_id)) != NULL){
-           printf("%s", temp);
-       }
-   }
 }
 
-int get_id_from_line(char* file_line){
+char* get_id_from_line(char* file_line){
     /* Function: get_id_from_line
     * ------------------------
     * 
@@ -74,15 +96,13 @@ int get_id_from_line(char* file_line){
     * 
     *  returns: int
     */
-    char *string_id;
-    int id;
-    string_id = strtok(file_line, ",");
-    id = atoi(string_id);
+    char *id;
+    id = strtok(file_line, ",");
     return id;
 
 }
 
-int get_id(char* emp_name){
+char* get_id(char* emp_name){
     /* Function: get_id
     * ------------------------
     * 
@@ -91,7 +111,7 @@ int get_id(char* emp_name){
     *  returns: int
     */
    char temp[512];
-   int name_id;
+   char* name_id;
    FILE *fp;
    fp = fopen("id_name.txt", "r");
 
@@ -105,16 +125,20 @@ int get_id(char* emp_name){
    return name_id;
 }
 
-int main(int argc, char *argv[]) {
+void server() {
 /* Declare variables */
-int emp_id;
+char* emp_id;
 
 char emp_name[20] = "Benjamin Tai";
 emp_id = get_id(emp_name);
-//printf("%d", emp_id);
+//printf("%s  ", emp_id);
 
 pthread_t thread_id;
-pthread_create(&thread_id, NULL, search_salaries, NULL);
+pthread_create(&thread_id, NULL, search_salaries, (void*)emp_id);
 pthread_join(thread_id, NULL);
+
+printf("Server ran.\n");
+
+
 
 }
