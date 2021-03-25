@@ -10,7 +10,11 @@
 #include <string.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <sys/socket.h>
+#include <netinet/in.h> 
 #include "server.h"
+
+#define PORT 8080 
 
 struct employee {
     int id;
@@ -199,6 +203,45 @@ char* get_id(char* emp_name){
 }
 
 void server() {
+// Declare socket variables
+int server_fd, new_socket, valread; 
+struct sockaddr_in address; 
+int opt = 1; 
+int addrlen = sizeof(address); 
+char buffer[100]; 
+
+// Creating socket file descriptor 
+if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
+    perror("socket failed"); 
+    exit(EXIT_FAILURE); 
+} 
+    
+// Forcefully attaching socket to the port 8080 
+if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) { 
+    perror("setsockopt"); 
+    exit(EXIT_FAILURE); 
+} 
+
+address.sin_family = AF_INET; 
+address.sin_addr.s_addr = INADDR_ANY; 
+address.sin_port = htons(PORT); 
+
+// Forcefully attaching socket to the port 8080 
+if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) { 
+    perror("bind failed"); 
+    exit(EXIT_FAILURE); 
+} 
+
+if (listen(server_fd, 3) < 0) { 
+    perror("listen"); 
+    exit(EXIT_FAILURE); 
+} 
+
+if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) { 
+    perror("accept"); 
+    exit(EXIT_FAILURE); 
+}
+
 /* Declare variables */
 char* emp_id;
 struct salary_sheet *ss = malloc(sizeof (struct salary_sheet));
@@ -208,27 +251,35 @@ struct satisfaction_sheet *sat_sheet = malloc(sizeof (struct satisfaction_sheet)
 struct satisfaction_input *sat_in = malloc(sizeof (struct satisfaction_input));
 
 char emp_name[20] = "Benjamin Tai";
+while ( (valread = read(new_socket, buffer, 100)) > 0) { 
+    printf("Name received from the client: %s\n", buffer);
 
-//Set up structs to pass to threads
-emp_id = get_id(emp_name);
-strcpy(si->id, emp_id);
-si->s = ss;
-strcpy(sat_in->id, emp_id);
-sat_in->s = sat_sheet;
-//printf("%s  ", emp_id);
+    //Get ID from name.
+    emp_id = get_id(buffer);
 
+    //Set up structs to pass to threads
+    strcpy(si->id, emp_id);
+    si->s = ss;
+    strcpy(sat_in->id, emp_id);
+    sat_in->s = sat_sheet;
 
-//Create salary sheet thread
-//pthread_t sal_thread_id;
-//pthread_create(&sal_thread_id, NULL, search_salaries, si);
-//pthread_join(sal_thread_id, NULL);
+    //Create salary sheet thread
+    pthread_t sal_thread_id;
+    pthread_create(&sal_thread_id, NULL, search_salaries, si);
+    pthread_join(sal_thread_id, NULL);
 
-//Create satisfaction thread
-pthread_t sat_thread_id;
-pthread_create(&sat_thread_id, NULL, search_satisfaction, sat_in);
-pthread_join(sat_thread_id, NULL);
+    //Create satisfaction thread
+    pthread_t sat_thread_id;
+    pthread_create(&sat_thread_id, NULL, search_satisfaction, sat_in);
+    pthread_join(sat_thread_id, NULL);
 
-printf("%s", sat_in->s->work_accident);
+    send(new_socket, si->s->job_title, 100, 0);
+    send(new_socket, si->s->pay, 100, 0);
+    send(new_socket, si->s->overtime_pay, 100, 0);
+    send(new_socket, si->s->benefit, 100, 0);
+    send(new_socket, si->s->status, 100, 0);
+    //printf("New name sent back to the client.\n");
 
-
+    memset(buffer, 0, 100); 
+}
 }

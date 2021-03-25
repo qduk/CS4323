@@ -12,7 +12,7 @@ int main(int argc, char const *argv[])
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
     char name[100];
-    char buffer[100]; 
+    char buffer[200]; 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
     { 
         printf("\n Socket creation error \n"); 
@@ -43,8 +43,20 @@ int main(int argc, char const *argv[])
         send(sock, name, strlen(name), 0); 
         printf("Name sent from the client.\n");
 
-        read(sock, buffer, 1024); 
-        printf("New name received from the server: %s\n", buffer); 
+        read(sock, buffer, 100); 
+        printf("Job title recieved from client: %s\n", buffer);
+
+        read(sock, buffer, 100); 
+        printf("Pay recieved from client: %s\n", buffer);
+
+        read(sock, buffer, 100); 
+        printf("Overtime pay recieved from client: %s\n", buffer);
+
+        read(sock, buffer, 100); 
+        printf("Benefit pay recieved from client: %s\n", buffer);
+
+        read(sock, buffer, 100); 
+        printf("Status recieved from client: %s\n", buffer);
     }
 
     return 0; 
