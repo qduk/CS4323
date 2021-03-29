@@ -42,30 +42,31 @@ struct salary_sheet {
 };
 
 struct satisfaction_sheet {
-    char id[5];
-    char satisfaction_level[5];
-    char number_project[5];
-    char monthly_hours[5];
-    char years_at_company[5];
-    char work_accident[5];
-    char promotion_give_years[5];
+    char id[100];
+    char satisfaction_level[100];
+    char number_project[100];
+    char monthly_hours[100];
+    char years_at_company[100];
+    char work_accident[100];
+    char promotion_give_years[100];
 };
 
 struct salary_input {
-    char id[10];
+    char id[100];
     struct salary_sheet *s;
 };
 
 struct satisfaction_input {
-    char id[10];
+    char id[100];
     struct satisfaction_sheet *s;
 };
 
 /* Function Declaration */
-char* get_id(char* emp_name);
+char* get_id(char* emp_name, char *job_title, char* status);
 char* get_id_from_line(char* file_line);
 int ensure_correct_line(char* fileline, char* );
 void* search_salaries(void *_args);
+int search_salaries_id(char* emp_name, char *job_title, char* status);
 void server();
 
 int ensure_correct_line(char* file_line, char* emp_id){
@@ -165,6 +166,45 @@ void* search_satisfaction(void *_args) {
 
 }
 
+int search_salaries_id(char* emp_id, char *job_title, char* status){
+    /* Function: ensure correct ID is chosen from job title and status
+    * ------------------------
+    * 
+    *  Gets id for the correct employee
+    * 
+    *  returns: int
+    */
+    FILE *fp;
+    fp = fopen("salaries.txt", "r");
+    char temp[512];
+    int test;
+    char* id_read;
+    char *job_title_read;
+    char *status_read;
+
+    while (fgets(temp, 512, fp) != NULL){
+        if((strstr(temp, emp_id)) != NULL){
+            id_read = strtok(temp, ",");
+            //printf("%s    %s\n", id_read, emp_id);
+            if(strcmp(id_read, emp_id) == 0){
+                job_title_read = strtok(NULL, ",");
+                //printf("%s\n", job_title_read);
+                test = strcmp(job_title_read, job_title);
+                if(strcmp(job_title_read, job_title) == 0){
+                    strtok(NULL, ",");
+                    strtok(NULL, ",");
+                    strtok(NULL, ",");
+                    status_read = strtok(NULL, ",");
+                    if(strcmp(status_read, status) == 10){
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
+
 char* get_id_from_line(char* file_line){
     /* Function: get_id_from_line
     * ------------------------
@@ -179,7 +219,7 @@ char* get_id_from_line(char* file_line){
 
 }
 
-char* get_id(char* emp_name){
+char* get_id(char* emp_name, char* job_title, char *status){
     /* Function: get_id
     * ------------------------
     * 
@@ -188,6 +228,7 @@ char* get_id(char* emp_name){
     *  returns: int
     */
    char temp[512];
+   int correct_id;
    char* name_id;
    FILE *fp;
    fp = fopen("id_name.txt", "r");
@@ -196,7 +237,12 @@ char* get_id(char* emp_name){
    while (fgets(temp, 512, fp) != NULL){
        if((strstr(temp, emp_name)) != NULL){
            name_id = get_id_from_line(temp);
-           break;
+           correct_id = search_salaries_id(name_id, job_title, status);
+           //printf("%d\n", correct_id);
+           if(correct_id == 0){
+               printf("%s\n", temp);
+               break;
+           }
        }
    }
    return name_id;
@@ -250,7 +296,9 @@ struct salary_input *si = malloc(sizeof (struct salary_input));
 struct satisfaction_sheet *sat_sheet = malloc(sizeof (struct satisfaction_sheet));
 struct satisfaction_input *sat_in = malloc(sizeof (struct satisfaction_input));
 
-//char emp_name[20] = "Benjamin Tai";
+char emp_name[100] = "Benjamin Tai";
+char emp_job_title[100] = "Registered Nurse";
+char emp_status[100] = "PT";
 while ( (valread = read(new_socket, buffer, 100)) > 0) { 
 
     printf("Name received from the client: %s\n", buffer);
@@ -259,10 +307,12 @@ while ( (valread = read(new_socket, buffer, 100)) > 0) {
     printf("Job title recieved from client: %s\n", buffer);
 
     read(new_socket, buffer, 100);
-    printf("Status recieved from client: %s\n", buffer);
+    printf("Status received from the client: %s\n", buffer);
 
+    
     //Get ID from name.
-    emp_id = get_id(buffer);
+    emp_id = get_id(emp_name, emp_job_title, emp_status);
+
 
     //Set up structs to pass to threads
     strcpy(si->id, emp_id);
@@ -281,11 +331,14 @@ while ( (valread = read(new_socket, buffer, 100)) > 0) {
     pthread_join(sat_thread_id, NULL);
 
     //Send back salary sheet info
+    send(new_socket, emp_name, 100, 0);
+    send(new_socket, si->s->id, 100, 0);
     send(new_socket, si->s->job_title, 100, 0);
     send(new_socket, si->s->pay, 100, 0);
     send(new_socket, si->s->overtime_pay, 100, 0);
     send(new_socket, si->s->benefit, 100, 0);
     send(new_socket, si->s->status, 100, 0);
+
 
     //Send back satisfaction sheet info
     send(new_socket, sat_in->s->satisfaction_level, 100, 0);
@@ -295,6 +348,8 @@ while ( (valread = read(new_socket, buffer, 100)) > 0) {
     send(new_socket, sat_in->s->work_accident, 100, 0);
     send(new_socket, sat_in->s->promotion_give_years, 100, 0);
 
-    memset(buffer, 0, 100); 
+    printf("Stuff Sent\n");
+    memset(buffer, 0, 100);
+
 }
 }

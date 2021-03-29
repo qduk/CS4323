@@ -69,7 +69,7 @@ int structure(){
 
     write(fd, concat, strlen(concat));
 
-    printf("%s\n", concat);
+    //printf("%s\n", concat);
 
       printf("Do you want to continue? y/n: ");
       scanf("%s", &ch);

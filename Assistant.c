@@ -119,7 +119,9 @@ int main(int argc, char const *argv[])
             if(fileSearch() == 1)
             {
                 //sending employee information to server from struct
-                send(sock, userPtr->employeeName, 100, 0);
+                if(send(sock, userPtr->employeeName, 100, 0)){
+                    perror("send");
+                }
                 send(sock, userPtr->jobTitle, 100, 0);
                 send(sock, userPtr->status, 100, 0);
 
@@ -127,7 +129,9 @@ int main(int argc, char const *argv[])
                 printf("Employee sent!\n"); 
             }
 
-     
+
+            sleep(2);
+            assistantReceive();
         }
     }
 

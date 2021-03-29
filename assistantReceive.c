@@ -15,6 +15,7 @@
 #include <string.h> 
 #include <stdlib.h>
 #include <pthread.h>
+#include "structure.h"
 
 #define PORT 8080 
 #define BUFFER_SIZE 512
@@ -23,7 +24,7 @@ int lineCount = 0; // To count amount of lines until they reach 10
 int count = 0; // To count each line in the history.txt file to copy it to other .txt file
 int lineToRemove = 0; // To count which line should be overwritten in the history.txt file
    
-void *assistantReceive() { // This can be changed for int main() function and 
+int assistantReceive() { // This can be changed for int main() function and 
                            // return NULL at the bottom could be changed for return 0
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
@@ -193,5 +194,5 @@ void *assistantReceive() { // This can be changed for int main() function and
     // printf("New terminal is opened.\n");
 
 
-    return NULL; 
+    return 0; 
 } 
