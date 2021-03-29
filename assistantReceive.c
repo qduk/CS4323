@@ -59,135 +59,139 @@ void *assistantReceive() {
         return -1; 
     } 
 
-    while (true) { 
 
-        int lineCount = 0; // To count amount of lines until they reach 10
-        int count = 0; // To count each line in the history.txt file to copy it to other .txt file
-        int lineToRemove = 0; // To count which line should be overwritten in the history.txt file
-        
-        /*
-            Reading each parameter from the server.
-        */
+    /*
+    
+    Get info from the server and write it to the history file below.
 
-        read(sock, empName, 100);
-        printf("Job title recieved from server: %s\n", empName);
+    */
 
-        read(sock, empID, 100);
-        printf("Job title recieved from server: %s\n", empID);
+    int lineCount = 0; // To count amount of lines until they reach 10
+    int count = 0; // To count each line in the history.txt file to copy it to other .txt file
+    int lineToRemove = 0; // To count which line should be overwritten in the history.txt file
+    
+    /*
+        Reading each parameter from the server.
+    */
 
-        read(sock, jobTitle, 100); 
-        printf("Job title recieved from server: %s\n", jobTitle);
+    read(sock, empName, 100);
+    printf("Job title recieved from server: %s\n", empName);
 
-        read(sock, pay, 100); 
-        printf("Pay recieved from server: %s\n", pay);
+    read(sock, empID, 100);
+    printf("Job title recieved from server: %s\n", empID);
 
-        read(sock, overtimePay, 100); 
-        printf("Overtime pay recieved from server: %s\n", overtimePay);
+    read(sock, jobTitle, 100); 
+    printf("Job title recieved from server: %s\n", jobTitle);
 
-        read(sock, benefitPay, 100); 
-        printf("Benefit pay recieved from server: %s\n", benefitPay);
+    read(sock, pay, 100); 
+    printf("Pay recieved from server: %s\n", pay);
 
-        read(sock, statusReceived, 100); 
-        printf("Status recieved from server: %s\n", statusReceived);
+    read(sock, overtimePay, 100); 
+    printf("Overtime pay recieved from server: %s\n", overtimePay);
 
-        read(sock, satisfactionLevel, 100);
-        printf("Satisfaction level received from server: %s\n", satisfactionLevel);
-        
-        read(sock, numberProject, 100);
-        printf("Number project received from server: %s\n", numberProject);
+    read(sock, benefitPay, 100); 
+    printf("Benefit pay recieved from server: %s\n", benefitPay);
 
-        read(sock, monthlyHours, 100);
-        printf("Monthly numbers received from server: %s\n", monthlyHours);
+    read(sock, statusReceived, 100); 
+    printf("Status recieved from server: %s\n", statusReceived);
 
-        read(sock, yearsAtCompany, 100);
-        printf("Years at company received from server: %s\n", yearsAtCompany);
+    read(sock, satisfactionLevel, 100);
+    printf("Satisfaction level received from server: %s\n", satisfactionLevel);
+    
+    read(sock, numberProject, 100);
+    printf("Number project received from server: %s\n", numberProject);
 
-        read(sock, workAccident, 100);
-        printf("Work accident received from server: %s", workAccident);
+    read(sock, monthlyHours, 100);
+    printf("Monthly numbers received from server: %s\n", monthlyHours);
 
-        read(sock, promotionGiveYears, 100);
-        printf("Promotion give years received from server: %s", promotionGiveYears);
-        
-        lineToRemove = (lineToRemove + 1) % 11;
-        if (lineToRemove == 0) {
-            lineToRemove ++;
-        }
+    read(sock, yearsAtCompany, 100);
+    printf("Years at company received from server: %s\n", yearsAtCompany);
 
-        FILE *fp;
-        FILE *temp;
+    read(sock, workAccident, 100);
+    printf("Work accident received from server: %s", workAccident);
 
-        /*
-            If there is 10 entrees in the history file, 
-            copy everything to the new history file and rewrite
-            the appropriate line.
-        */
+    read(sock, promotionGiveYears, 100);
+    printf("Promotion give years received from server: %s", promotionGiveYears);
+    
+    lineToRemove = (lineToRemove + 1) % 11;
+    if (lineToRemove == 0) {
+        lineToRemove ++;
+    }
 
-        if (lineCount == 10) {
-            fp = fopen("history.txt", "r");
-            temp = fopen("history_temp.txt", "w");
+    FILE *fp;
+    FILE *temp;
 
-            while ((fgets(buffer, BUFFER_SIZE, fp)) != NULL) { 
-                count = (count + 1) % 11;
-                if (count == 0) {
-                    count ++;
-                }
+    /*
+        If there is 10 entrees in the history file, 
+        copy everything to the new history file and rewrite
+        the appropriate line.
+    */
 
-                if (lineToRemove == count) {
-                    fprintf(temp, "%s,", empName);
-                    fprintf(temp, "%s,", empID);
-                    fprintf(temp, "%s,", jobTitle);
-                    fprintf(temp, "%s,", pay);
-                    fprintf(temp, "%s,", overtimePay);
-                    fprintf(temp, "%s,", benefitPay);
-                    fprintf(temp, "%s,", statusReceived);
-                    fprintf(temp, "%s,", satisfactionLevel);
-                    fprintf(temp, "%s,", numberProject);
-                    fprintf(temp, "%s,", monthlyHours);
-                    fprintf(temp, "%s,", yearsAtCompany);
-                    fprintf(temp, "%s,", workAccident);
-                    fprintf(temp, "%s,", promotionGiveYears);
-                    fprintf(temp, "\n");
-                } else {
-                    fprintf(temp, "%s", buffer);
-                }
+    if (lineCount == 10) {
+        fp = fopen("history.txt", "r");
+        temp = fopen("history_temp.txt", "w");
+
+        while ((fgets(buffer, BUFFER_SIZE, fp)) != NULL) { 
+            count = (count + 1) % 11;
+            if (count == 0) {
+                count ++;
             }
 
-            fclose(fp);
-            fclose(temp);
-
-        } else {
-            lineCount ++;
-            fp = fopen("history.txt", "a");
-
-            if (!fp) {
-                perror("Couldn't open history.txt file in the Assistant thread.\n");
-                return -1;
-            } 
-            fprintf(fp, "%s,", empName);
-            fprintf(fp, "%s,", empID);
-            fprintf(fp, "%s,", jobTitle);
-            fprintf(fp, "%s,", pay);
-            fprintf(fp, "%s,", overtimePay);
-            fprintf(fp, "%s,", benefitPay);
-            fprintf(fp, "%s,", statusReceived);
-            fprintf(fp, "%s,", satisfactionLevel);
-            fprintf(fp, "%s,", numberProject);
-            fprintf(fp, "%s,", monthlyHours);
-            fprintf(fp, "%s,", yearsAtCompany);
-            fprintf(fp, "%s,", workAccident);
-            fprintf(fp, "%s,", promotionGiveYears);
-            fprintf(fp, "\n");
-
-            fclose(fp);
+            if (lineToRemove == count) {
+                fprintf(temp, "%s,", empName);
+                fprintf(temp, "%s,", empID);
+                fprintf(temp, "%s,", jobTitle);
+                fprintf(temp, "%s,", pay);
+                fprintf(temp, "%s,", overtimePay);
+                fprintf(temp, "%s,", benefitPay);
+                fprintf(temp, "%s,", statusReceived);
+                fprintf(temp, "%s,", satisfactionLevel);
+                fprintf(temp, "%s,", numberProject);
+                fprintf(temp, "%s,", monthlyHours);
+                fprintf(temp, "%s,", yearsAtCompany);
+                fprintf(temp, "%s,", workAccident);
+                fprintf(temp, "%s,", promotionGiveYears);
+                fprintf(temp, "\n");
+            } else {
+                fprintf(temp, "%s", buffer);
+            }
         }
 
-        remove("history.txt");
-        rename("history_temp.txt", "history.txt");
+        fclose(fp);
+        fclose(temp);
 
-        // int status = system("open -a Terminal \"`pwd`\""); // TO OPEN NEW TERMINAL
-        // printf("New terminal is opened.\n");
+    } else {
+        lineCount ++;
+        fp = fopen("history.txt", "a");
 
-        }
+        if (!fp) {
+            perror("Couldn't open history.txt file in the Assistant thread.\n");
+            return -1;
+        } 
+        fprintf(fp, "%s,", empName);
+        fprintf(fp, "%s,", empID);
+        fprintf(fp, "%s,", jobTitle);
+        fprintf(fp, "%s,", pay);
+        fprintf(fp, "%s,", overtimePay);
+        fprintf(fp, "%s,", benefitPay);
+        fprintf(fp, "%s,", statusReceived);
+        fprintf(fp, "%s,", satisfactionLevel);
+        fprintf(fp, "%s,", numberProject);
+        fprintf(fp, "%s,", monthlyHours);
+        fprintf(fp, "%s,", yearsAtCompany);
+        fprintf(fp, "%s,", workAccident);
+        fprintf(fp, "%s,", promotionGiveYears);
+        fprintf(fp, "\n");
+
+        fclose(fp);
+    }
+
+    remove("history.txt");
+    rename("history_temp.txt", "history.txt");
+
+    // int status = system("open -a Terminal \"`pwd`\""); // TO OPEN NEW TERMINAL
+    // printf("New terminal is opened.\n");
+
 
     return NULL; 
 } 
