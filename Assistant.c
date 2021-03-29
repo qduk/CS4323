@@ -23,7 +23,7 @@ struct User *userPtr, user;
 int main(int argc, char const *argv[])
 {
 
-    //printf("Hello, World! \n");
+    printf("Assistant Started! \n");
 
 //====== Socket Setup ======================================================
     //initializing socket vars
@@ -91,6 +91,7 @@ int main(int argc, char const *argv[])
         //reading from pipe if pipe is not empty
         if(read(fd1, str1, 100) > 0)
         {
+            perror("read");
             printf("%s\n", str1);
 
             token = strtok(str1, ",");
@@ -108,8 +109,6 @@ int main(int argc, char const *argv[])
             //adding employee information to struct
             
            
-
-            
 
             //search file, if employee not in file, send to server
             if(fileSearch() == 1)
@@ -189,8 +188,6 @@ int fileSearch()
        return 1;
     }
     
-
-  
 
 
     fclose(filep);
