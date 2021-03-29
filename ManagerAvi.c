@@ -5,6 +5,7 @@
 #include <fcntl.h> 
 #include <sys/stat.h> 
 #include <sys/types.h> 
+#include <stdlib.h>
 
 
 /**********Structure**********/
@@ -25,30 +26,50 @@ int structure(){
   // Creating the file
   mkfifo(myfifo, 0644);
   char arr, arr1, arr2;
-  char ch;
+  char ch, temp;
   // Open file fo write only
   fd = open(myfifo, O_WRONLY);
 
+  printf("click enter to continue\n");
   while(1){
-
+      scanf("%c",&temp); // temp statement to clear buffer
       // Take user UserInput and write to file
       printf("Enter Employee Name: ");
-      scanf("\n%s", userPtr->employeeName);
+      scanf("%[^\n]", userPtr->employeeName);
 
       printf("Enter Job Title: ");
-      scanf("\n%s", userPtr->jobTitle);
+      scanf("%c",&temp); // temp statement to clear buffer
+      scanf("%[^\n]", userPtr->jobTitle);
 
       printf("Enter Status: ");
-      scanf("\n%s", userPtr->status);
-      
+      scanf("%c",&temp); // temp statement to clear buffer
+      scanf("%[^\n]", userPtr->status);
+
+      char *space = ",";   
       char *arr = userPtr->employeeName;
-      write(fd, arr, strlen(arr)+1);
-
       char *arr1 = userPtr->jobTitle;
-      write(fd, arr1, strlen(arr1)+1);
-
       char *arr2 = userPtr->status;
-      write(fd, arr2, strlen(arr2)+1);
+     
+
+      unsigned int const sz1  = strlen(arr);
+      unsigned int const sz2  = strlen(arr1);
+      unsigned int const sz3  = strlen(arr2);
+      unsigned int const szSpace  = strlen(space);
+
+      char *concat = (char*)malloc(sz1+sz2+sz3+3);
+
+      memcpy( concat, arr  , sz1 );
+      memcpy( concat+sz1, space , szSpace);
+      memcpy( concat+sz1+szSpace, arr1 , sz2 );
+      memcpy( concat+sz1+szSpace+sz2, space , szSpace);
+      memcpy( concat+sz1+szSpace+sz2+szSpace, arr2 , sz3 );
+     memcpy( concat+sz1+szSpace+sz2+szSpace+sz3, space , szSpace);
+    
+    concat[sz1+ szSpace + sz2 + szSpace + sz3 +szSpace] = '\0';
+
+    write(fd, concat, strlen(concat));
+
+    printf("%s\n", concat);
 
       printf("Do you want to continue? y/n: ");
       scanf("%s", &ch);
@@ -58,6 +79,7 @@ int structure(){
       }
       // End program if user input is 'n'
       else if(ch == 'n'){
+        close(fd);
         return 0;
       }
   }
