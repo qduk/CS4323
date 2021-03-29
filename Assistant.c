@@ -12,6 +12,10 @@
 
 /*
 Assistant.c is the first half of the assistant
+This process connects to the server and then starts a loop that reads in employee 
+info from the fifo pipe, checks the history file for the employee, and sends the 
+information to the server if the search returns false
+
 Written by Kayla Walkup
 */
 
@@ -83,6 +87,7 @@ int main(int argc, char const *argv[])
         perror("connect");
     }
 
+    //token to split up string from pipe
     char *token; 
     
     //loop to read from pipe, check history file for employee, and send employee to server if not there
@@ -91,22 +96,22 @@ int main(int argc, char const *argv[])
         //reading from pipe if pipe is not empty
         if(read(fd1, str1, 100) > 0)
         {
+            //feedback on if read was successful or not
             perror("read");
-            printf("%s\n", str1);
-
+         
+            //splitting up info from pipe and entering it into the struct
             token = strtok(str1, ",");
             strcpy(userPtr->employeeName, token);
-            printf("%s\n", userPtr->employeeName);
+            printf("Name: %s\n", userPtr->employeeName);
 
             token = strtok(NULL, ",");
             strcpy(userPtr->jobTitle, token);
-            printf("%s\n", userPtr->jobTitle);
+            printf("Job Title: %s\n", userPtr->jobTitle);
 
             token = strtok(NULL, ",");
             strcpy(userPtr->status, token);
-            printf("%s\n", userPtr->status);
-
-            //adding employee information to struct
+            printf("Status: %s\n", userPtr->status);
+            //--------------------------------------------------------------
             
            
 
@@ -125,10 +130,7 @@ int main(int argc, char const *argv[])
      
         }
     }
-        
-        
 
-    
 
 //======================================================================================
 
@@ -140,11 +142,9 @@ int main(int argc, char const *argv[])
 //fuction to search history file for employee
 int fileSearch()
 {
-    //opening file
+    //opening file------------------
     FILE *filep;
     char *filename = "history.txt";
-
-   
 
     filep = fopen(filename, "a+");
     if (filep == NULL)
@@ -152,22 +152,22 @@ int fileSearch()
         perror("Error: ");
         exit(0); 
     }
+    //-------------------------------
 
+    //return false (1) if file is empty
     int size;
     fseek (filep, 0, SEEK_END);
     size = ftell(filep);
-
     if (0 == size) {
         //printf("file is empty\n");
         return 1;
     }
+    //----------------------------------
 
-    printf("here");
 
 
+    //search the file for employee info------------------------------------------
     char line[256];
-
-    
     while (fgets(line, sizeof(line), filep)) 
     {
       
@@ -175,6 +175,7 @@ int fileSearch()
        {
            if(strstr(line, userPtr->jobTitle) && strstr(line, userPtr->status))
            {
+               //Emplyee in history file, can print
                printf("%s\n", line);
                return 0;
            }
@@ -187,10 +188,10 @@ int fileSearch()
 
        return 1;
     }
-    
+    //--------------------------------------------------------------------------------
 
-
+    //close file
     fclose(filep);
 
-    return 0;
+    return 1;
 }
