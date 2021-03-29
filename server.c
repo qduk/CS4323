@@ -250,9 +250,16 @@ struct salary_input *si = malloc(sizeof (struct salary_input));
 struct satisfaction_sheet *sat_sheet = malloc(sizeof (struct satisfaction_sheet));
 struct satisfaction_input *sat_in = malloc(sizeof (struct satisfaction_input));
 
-char emp_name[20] = "Benjamin Tai";
+//char emp_name[20] = "Benjamin Tai";
 while ( (valread = read(new_socket, buffer, 100)) > 0) { 
+
     printf("Name received from the client: %s\n", buffer);
+
+    read(new_socket, buffer, 100);
+    printf("Job title recieved from client: %s\n", buffer);
+
+    read(new_socket, buffer, 100);
+    printf("Status recieved from client: %s\n", buffer);
 
     //Get ID from name.
     emp_id = get_id(buffer);
@@ -273,12 +280,20 @@ while ( (valread = read(new_socket, buffer, 100)) > 0) {
     pthread_create(&sat_thread_id, NULL, search_satisfaction, sat_in);
     pthread_join(sat_thread_id, NULL);
 
+    //Send back salary sheet info
     send(new_socket, si->s->job_title, 100, 0);
     send(new_socket, si->s->pay, 100, 0);
     send(new_socket, si->s->overtime_pay, 100, 0);
     send(new_socket, si->s->benefit, 100, 0);
     send(new_socket, si->s->status, 100, 0);
-    //printf("New name sent back to the client.\n");
+
+    //Send back satisfaction sheet info
+    send(new_socket, sat_in->s->satisfaction_level, 100, 0);
+    send(new_socket, sat_in->s->number_project, 100, 0);
+    send(new_socket, sat_in->s->monthly_hours, 100, 0);
+    send(new_socket, sat_in->s->years_at_company, 100, 0);
+    send(new_socket, sat_in->s->work_accident, 100, 0);
+    send(new_socket, sat_in->s->promotion_give_years, 100, 0);
 
     memset(buffer, 0, 100); 
 }
