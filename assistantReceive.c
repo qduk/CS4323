@@ -1,11 +1,12 @@
 /*
  * Author Name: Maksim Tybar
  * Email: mtybar@okstate.edu
- * Date: 03/15/2021
+ * Date: 03/28/2021
  * Program Description: This program implements the assistant role of the mini group project (receiving part)
+                        Receiving part send name request to the server and gets back the appropriate
+                        information and then stores it in the history.txt file.
 */
 
-// Client side C/C++ program to demonstrate Socket programming 
 #include <stdio.h> 
 #include <stdbool.h> 
 #include <sys/socket.h> 
@@ -18,8 +19,8 @@
 #define PORT 8080 
 #define BUFFER_SIZE 512
    
-int main(int argc, char const *argv[]) 
-{ 
+void *assistantReceive() { 
+    
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
     char buffer[BUFFER_SIZE];  
@@ -58,15 +59,16 @@ int main(int argc, char const *argv[])
         return -1; 
     } 
 
-    while (1) { 
+    while (true) { 
 
-        int lineCount = 0;
-        int count = 0;
-        int lineToRemove = 0;
+        int lineCount = 0; // To count amount of lines until they reach 10
+        int count = 0; // To count each line in the history.txt file to copy it to other .txt file
+        int lineToRemove = 0; // To count which line should be overwritten in the history.txt file
         
         /*
             Reading each parameter from the server.
         */
+
         read(sock, empName, 100);
         printf("Job title recieved from server: %s\n", empName);
 
@@ -107,6 +109,10 @@ int main(int argc, char const *argv[])
         printf("Promotion give years received from server: %s", promotionGiveYears);
         
         lineToRemove = (lineToRemove + 1) % 11;
+        if (lineToRemove == 0) {
+            lineToRemove ++;
+        }
+
         FILE *fp;
         FILE *temp;
 
@@ -115,6 +121,7 @@ int main(int argc, char const *argv[])
             copy everything to the new history file and rewrite
             the appropriate line.
         */
+
         if (lineCount == 10) {
             fp = fopen("history.txt", "r");
             temp = fopen("history_temp.txt", "w");
@@ -182,108 +189,6 @@ int main(int argc, char const *argv[])
 
         }
 
-    return 0; 
+    return NULL; 
 } 
 
-
-/*
-#include <stdlib.h>
-#include <stdio.h>
-#include <pthread.h>
-#include <stdbool.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-
-#define BUFFER_SIZE 512
-#define MAX_LINES 10
-
-typedef struct Employee {
-    int id;
-    char name[100];
-    char jobTital[100];
-    float pay;
-    float overtimePay;
-    float benefit;
-    char status[2];
-    int satisfactionLevel;
-    int numProject;
-    int averageHoursMonthly;
-    int timeAtCompanyYears;
-    bool workAccident;
-    bool promotionFiveYears;
-} Employee;
-
-int fd[2]; // File descriptor for pipe queues between Manager and Asisstant
-
-char *readInputFromManager() {
-
-    char *name;
-    name = (char*)malloc(sizeof(char) * 30);
-
-    if (read(fd[0], name, sizeof(name)) < 0) {
-        perror("Couldn't read from the pipe in Assistant thread.\n");
-        return -1;
-    }
-
-    printf("Received employee name: %s\n", *name);
-
-    return name;
-}
-
-void *assistantReceive() {
-
-    int sockfd, portno, n;
-    struct sockaddr_in serv_addr;
-    struct hostent *server;
-
-    printf("Assistant has been created.\n");
-
-    Employee employee;
-
-    char buffer[BUFFER_SIZE];
-    char *empFileName;
-    char *empManagerName;
-    bool nameFound = false;
-    empManagerName = readInputFromManager(); // get employee name from the Manager thread
-
-    FILE *fp;
-    fp = fopen("history.txt", "r");
-    if (!fp) {
-        perror("Couldn't open history.txt file in the Assistant thread.\n");
-        return -1;
-    } else {
-
-        while (feof(fp) || (!nameFound)) {
-            fgets(buffer, 512, fp);
-            empFileName = strtok(buffer, ",");
-            empFileName = strtok(NULL, ","); // to get the second element in the line
-
-            if (*(empFileName) == (*empManagerName)) {
-
-                    employee.id = strtok(buffer, ",");
-                    strcpy(employee.name, strtok(NULL, ","));
-                    strcpy(employee.jobTital, strtok(NULL, ","));
-                    employee.pay = strtok(NULL, ",");
-                    employee.overtimePay = strtok(NULL, ",");
-                    employee.benefit = strtok(NULL, ",");
-                    strcpy(employee.status, strtok(NULL, ","));
-                    employee.satisfactionLevel = strtok(NULL, ",");
-                    employee.numProject = strtok(NULL, ",");
-                    employee.averageHoursMonthly = strtok(NULL, ",");
-                    employee.timeAtCompanyYears = strtok(NULL, ",");
-                    employee.workAccident = strtok(NULL, ",");
-                    employee.promotionFiveYears = strtok(NULL, ",");
-
-            nameFound = true;
-        }
-
-        if (nameFound == false) {
-            
-        }
-
-    }
-            
-	return NULL;
-}
-*/
