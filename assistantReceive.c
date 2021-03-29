@@ -18,9 +18,13 @@
 
 #define PORT 8080 
 #define BUFFER_SIZE 512
-   
-void *assistantReceive() { 
 
+int lineCount = 0; // To count amount of lines until they reach 10
+int count = 0; // To count each line in the history.txt file to copy it to other .txt file
+int lineToRemove = 0; // To count which line should be overwritten in the history.txt file
+   
+void *assistantReceive() { // This can be changed for int main() function and 
+                           // return NULL at the bottom could be changed for return 0
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
     char buffer[BUFFER_SIZE];  
@@ -65,10 +69,6 @@ void *assistantReceive() {
     Get info from the server and write it to the history file below.
 
     */
-
-    int lineCount = 0; // To count amount of lines until they reach 10
-    int count = 0; // To count each line in the history.txt file to copy it to other .txt file
-    int lineToRemove = 0; // To count which line should be overwritten in the history.txt file
     
     /*
         Reading each parameter from the server.
@@ -159,6 +159,9 @@ void *assistantReceive() {
 
         fclose(fp);
         fclose(temp);
+        
+        remove("history.txt");
+        rename("history_temp.txt", "history.txt");
 
     } else {
         lineCount ++;
@@ -185,9 +188,6 @@ void *assistantReceive() {
 
         fclose(fp);
     }
-
-    remove("history.txt");
-    rename("history_temp.txt", "history.txt");
 
     // int status = system("open -a Terminal \"`pwd`\""); // TO OPEN NEW TERMINAL
     // printf("New terminal is opened.\n");
