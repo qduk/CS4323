@@ -52,53 +52,72 @@ int main(int argc, char const *argv[])
 //==================================================================================
     
     
-//==== Open History File ==================================================================
     
 
-//==================================================================================
+//=====Pipe setup=================================================================
 
-
+    //struct pointer to store employee info
     userPtr = &user;
-    //int for the pipe
+
+    //pipe file descriptor
     int fd1;
 
     // FIFO file path
     char *myfifo = "myfifo.txt";
 
-    char str1[80];
-    char str2[80];
-    char str3[80];
+    //chars to store read data in
+    char str1[100];
+    char str2[100];
+    char str3[100];
 
     
-    int i = 0;
-
+  
+    //open pipe for read
     fd1 = open(myfifo, O_RDONLY);
-    //printf("pipe open!\n");
+
+//==================================================================================    
    
+   //print error if connection fails
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) 
     {
         perror("connect");
     }
 
+    char *token; 
+    
+    //loop to read from pipe, check history file for employee, and send employee to server if not there
     while(1)
     {
-        if(read(fd1, str1, 80) > 0)
+        //reading from pipe if pipe is not empty
+        if(read(fd1, str1, 100) > 0)
         {
-            strcpy(userPtr->employeeName, str1);
+            printf("%s\n", str1);
 
-            read(fd1, str2, 80); 
-            strcpy(userPtr->jobTitle, str2); 
+            token = strtok(str1, ",");
+            strcpy(userPtr->employeeName, token);
+            printf("%s\n", userPtr->employeeName);
 
-            read(fd1, str3, 80);
-            strcpy(userPtr->status, str3); 
+            token = strtok(NULL, ",");
+            strcpy(userPtr->jobTitle, token);
+            printf("%s\n", userPtr->jobTitle);
+
+            token = strtok(NULL, ",");
+            strcpy(userPtr->status, token);
+            printf("%s\n", userPtr->status);
+
+            //adding employee information to struct
+            
+           
+
             
 
+            //search file, if employee not in file, send to server
             if(fileSearch() == 1)
             {
                 //sending employee information to server from struct
-                send(sock, userPtr->employeeName, strlen(userPtr->employeeName), 0);
-                send(sock, userPtr->jobTitle, strlen(userPtr->jobTitle), 0);
-                send(sock, userPtr->status, strlen(userPtr->status), 0);
+                send(sock, userPtr->employeeName, 100, 0);
+                send(sock, userPtr->jobTitle, 100, 0);
+                send(sock, userPtr->status, 100, 0);
 
                 //print statement to test the send worked
                 printf("Employee sent!\n"); 
@@ -118,17 +137,34 @@ int main(int argc, char const *argv[])
     return 0;
 }
 
+
+//fuction to search history file for employee
 int fileSearch()
 {
     //opening file
     FILE *filep;
     char *filename = "history.txt";
+
+   
+
     filep = fopen(filename, "a+");
     if (filep == NULL)
     {
         perror("Error: ");
         exit(0); 
     }
+
+    int size;
+    fseek (filep, 0, SEEK_END);
+    size = ftell(filep);
+
+    if (0 == size) {
+        //printf("file is empty\n");
+        return 1;
+    }
+
+    printf("here");
+
 
     char line[256];
 
